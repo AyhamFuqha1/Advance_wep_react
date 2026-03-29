@@ -28,7 +28,7 @@ function Navbar(){
             Dashboard
           </a>
 
-          <a onClick={() => navigate(ROUTES.PROFILE)}>
+          <a onClick={() => navigate(ROUTES.SUBJECTS)}>
             Subjects
           </a>
 

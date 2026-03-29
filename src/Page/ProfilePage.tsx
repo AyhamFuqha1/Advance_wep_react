@@ -10,10 +10,29 @@ import Field from "../components/Field";
 import DeleteModal from "../components/DeleteModal";
 import PasswordModal from "../components/PasswordModal";
 import LogoutModal from "../components/LogoutModal";
-import { useScrollReveal } from "../components/hooks/useScrollReveal";
+
 import { tagColor, DEFAULT_SUBJECTS } from "../data/profileData";
 import { validatePassword, validateDeleteConfirm } from "../validation/profileValidation";
 import type  {PasswordState } from "../interfaces/profile";
+
+import { useEffect } from "react";
+
+function useScrollReveal(): void {
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("revealed");
+            io.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll(".reveal-card").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
 
 export default function ProfilePage(){
   useScrollReveal();
@@ -89,12 +108,12 @@ export default function ProfilePage(){
     <div>
       <Navbar />
 
-      {/* BANNER */}
+   
       <div className="banner" />
 
       <div className="wrap">
 
-        {/* PROFILE TOP */}
+       
         <div className="profile-top">
           <div className="avatar-wrap" onClick={() => fileRef.current?.click()}>
             <div className="avatar-inner">
@@ -143,7 +162,7 @@ export default function ProfilePage(){
           </div>
         </div>
 
-        {/* PERSONAL INFORMATION */}
+  
         <div className="row-full">
           <div className="card reveal-card">
             <div className="card-head">
@@ -181,7 +200,7 @@ export default function ProfilePage(){
           </div>
         </div>
 
-        {/* ACADEMIC + INTERESTS */}
+       
         <div className="row-two-col">
 
           <div className="card reveal-card">
