@@ -1,0 +1,358 @@
+.features-section {
+  padding: 1vw 6vw 2vw;
+  background: rgb(250, 249, 249);
+  width: 100%;
+  overflow: visible;
+  min-height: 85vh;  
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.25vw 1.5vw;
+}
+
+.features-header {
+  grid-column: 1 / -1;
+  margin-top: 5vw;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.features-header.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.features-subtitle {
+  display: block;
+  font-size: 0.8vw;
+  font-weight: 1000;
+  letter-spacing: 0.2em;
+  color: #a0a09a;
+  margin-bottom: 0.8vw;
+  text-transform: uppercase;
+  font-family: 'Abhaya Libre', serif;
+}
+
+.features-title {
+  font-size: 3vw;
+  font-weight: 400;
+  color: #666565;
+  line-height: 1.1;
+  margin: 0;
+  font-family: 'Abhaya Libre', serif;
+}
+
+.features-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.25vw 1.5vw;
+}
+
+.feature-card4 {
+  position: relative;
+  background: #fff;
+  border: 1px solid rgba(170, 169, 169, 0.7);
+  border-radius: 16px;
+  padding: 2.5vw 2vw 2vw;
+  max-height: 15vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8vw;
+  cursor: default;
+  box-shadow: 0 30px 32px rgba(0, 0, 0, 0.02);
+  margin-top: 5vw;
+  opacity: 0;
+  transform: translateY(50px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1),
+    box-shadow 0.4s ease,
+    border-color 0.4s ease;
+}
+
+.feature-card4.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feature-card4:hover {
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
+  border-color: transparent;
+  transform: translateY(-8px);
+}
+
+.feature-num {
+  position: absolute;
+  top: 1.2vw;
+  right: 1.4vw;
+  font-size: 0.75vw;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #d0d0cc;
+  font-family: 'Abhaya Libre', serif;
+}
+
+.feature-icon {
+  font-size: 1.8vw;
+  color: #3d3d3d;
+  background: #f2f2ef;
+  border-radius: 10px;
+  padding: 0.6vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card4:hover .feature-icon {
+  background: #1a1a1a;
+  color: #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card4 h3 {
+  font-size: 1.05vw;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+  font-family: 'Abhaya Libre', serif;
+}
+
+.feature-card4 p {
+  font-size: 0.85vw;
+  color: #888;
+  margin: 0;
+  line-height: 1.6;
+  font-family: 'Abhaya Libre', serif;
+}
+
+.feature-line {
+  display: block;
+  margin-top: auto;
+  width: 0;
+  height: 2px;
+  background: #1a1a1a;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.feature-card4:hover .feature-line {
+  width: 100%;
+}
+
+/* =========================
+   Large screens
+========================= */
+@media (max-width: 1200px) {
+  .features-section {
+    padding: 2vw 4vw 3vw;
+    gap: 1.5vw;
+  }
+
+  .features-header {
+    margin-bottom: 1.8vw;
+  }
+
+  .features-subtitle {
+    font-size: 1.1vw;
+  }
+
+  .features-title {
+    font-size: 3.8vw;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5vw;
+  }
+
+  .feature-card4 {
+    padding: 2.2vw 1.8vw 1.8vw;
+    gap: 1vw;
+  }
+
+  .feature-num {
+    top: 1.1vw;
+    right: 1.2vw;
+    font-size: 0.95vw;
+  }
+
+  .feature-icon {
+    font-size: 2.2vw;
+    padding: 0.75vw;
+  }
+
+  .feature-card4 h3 {
+    font-size: 1.35vw;
+  }
+
+  .feature-card4 p {
+    font-size: 1.05vw;
+  }
+}
+
+
+@media (min-width: 601px) and (max-width: 992px) {
+  .features-section {
+    padding: 4vw;
+    gap: 20px;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .features-header {
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+
+  .features-subtitle {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .features-title {
+    font-size: 32px;
+    line-height: 1.15;
+  }
+
+  .feature-card4 {
+    padding: 22px 20px 20px;
+    gap: 10px;
+    border-radius: 16px;
+    max-height: none;
+    margin-top: 0;
+  }
+
+  .feature-num {
+    top: 14px;
+    right: 16px;
+    font-size: 11px;
+  }
+
+  .feature-icon {
+    font-size: 22px;
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .feature-card4 h3 {
+    font-size: 17px;
+  }
+
+  .feature-card4 p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .features-section {
+    padding: 24px 20px 70px;
+    gap: 16px;
+    margin-bottom: 70vw;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .features-header {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    transform: translateY(25px);
+  }
+
+  .features-subtitle {
+    font-size: 10px;
+    margin-bottom: 8px;
+    letter-spacing: 0.18em;
+  }
+
+  .features-title {
+    font-size: 26px;
+    line-height: 1.2;
+  }
+
+  .feature-card4 {
+    min-height: auto;
+    max-height: none;
+    margin-top: 0;
+    padding: 20px 18px 18px;
+    gap: 10px;
+    border-radius: 14px;
+    transform: translateY(30px);
+  }
+
+  .feature-card4.visible {
+    transform: translateY(0);
+  }
+
+  .feature-card4:hover {
+    transform: translateY(-4px);
+  }
+
+  .feature-num {
+    top: 12px;
+    right: 14px;
+    font-size: 10px;
+  }
+
+  .feature-icon {
+    font-size: 20px;
+    padding: 9px;
+    border-radius: 9px;
+  }
+
+  .feature-card4 h3 {
+    font-size: 16px;
+  }
+
+  .feature-card4 p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 380px) {
+  .features-section {
+    padding: 20px 16px 32px;
+  }
+
+  .features-grid {
+    gap: 14px;
+  }
+
+  .features-title {
+    font-size: 23px;
+  }
+
+  .feature-card4 {
+    padding: 18px 16px 16px;
+  }
+
+  .feature-num {
+    font-size: 9px;
+    top: 10px;
+    right: 12px;
+  }
+
+  .feature-icon {
+    font-size: 18px;
+    padding: 8px;
+  }
+
+  .feature-card4 h3 {
+    font-size: 15px;
+  }
+
+  .feature-card4 p {
+    font-size: 12px;
+  }
+}

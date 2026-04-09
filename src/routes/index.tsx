@@ -1,5 +1,4 @@
 import { Route, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
-
 import Home from "../Page/Home";
 import Login from "../Page/Login";
 import SignUp from "../Page/Signup";
@@ -18,5 +17,5 @@ const router = createBrowserRouter(
   )
 );
 
-
 export default router;
+
