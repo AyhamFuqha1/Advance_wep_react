@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
-//import { useAuth } from '../contexts/AuthContext';
-//import { useToast } from '../contexts/ToastContext';
-import { ArrowLeft, Clock, Zap, Trophy, Target } from 'lucide-react';
+import { Clock} from 'lucide-react';
 import  Navbar  from '../components/Navbar';
+import QuizModeButton from '../components/QuizModeButton';
+import BackButton from '../components/BackButton';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
 
@@ -36,8 +36,6 @@ interface Quiz {
 export function Quiz() {
   const navigate = useNavigate();
   const { quizId } = useParams();
-  //const { user } = useAuth();
-  //const { showToast } = useToast();
    const [toast, setToast] = useState<{msg:string,type:string}>({msg:"",type:""});
    const showToast = (msg: string,type: string): void => {
     setToast({msg,type});
@@ -311,14 +309,7 @@ export function Quiz() {
 
         <div className="max-w-[700px] mx-auto px-4 md:px-8 py-20">
           {/* Back Button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 mb-8 text-base transition-all duration-300 hover:-translate-x-1 animate-fade-up"
-            style={{ color: '#555555' }}>
-            <ArrowLeft className="w-5 h-5" />
-            Back to Subject
-          </button>
-
+        <BackButton navigate={() => navigate(-1)} statement="Back to Subject"/>
           {/* Selection Card */}
           <div
             className="animate-fade-up"
@@ -348,106 +339,12 @@ export function Quiz() {
             {/* Difficulty Options */}
             <div className="space-y-4">
               {/* Easy */}
-              <button
-                onClick={() => handleSelectDifficulty('easy')}
-                className="w-full text-left p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #e5e5e5',
-                  borderRadius: '16px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#10b981';
-                  e.currentTarget.style.background = '#f0fdf4';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e5e5';
-                  e.currentTarget.style.background = '#ffffff';
-                }}>
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: '#d1fae5' }}>
-                    <Zap className="w-6 h-6" style={{ color: '#10b981' }} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-1" style={{ color: '#1a1a1a' }}>
-                      Easy
-                    </h3>
-                    <p className="text-sm" style={{ color: '#555555' }}>
-                      Perfect for beginners • {allQuestions.filter(q => q.difficulty === 'easy').length} questions
-                    </p>
-                  </div>
-                </div>
-              </button>
-
+             <QuizModeButton type="easy" handleSelectDifficulty={handleSelectDifficulty} allQuestions={allQuestions}/>
               {/* Medium */}
-              <button
-                onClick={() => handleSelectDifficulty('medium')}
-                className="w-full text-left p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #e5e5e5',
-                  borderRadius: '16px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#f59e0b';
-                  e.currentTarget.style.background = '#fffbeb';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e5e5';
-                  e.currentTarget.style.background = '#ffffff';
-                }}>
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: '#fef3c7' }}>
-                    <Target className="w-6 h-6" style={{ color: '#f59e0b' }} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-1" style={{ color: '#1a1a1a' }}>
-                      Medium
-                    </h3>
-                    <p className="text-sm" style={{ color: '#555555' }}>
-                      Moderate challenge • {allQuestions.filter(q => q.difficulty === 'medium').length} questions
-                    </p>
-                  </div>
-                </div>
-              </button>
+              <QuizModeButton type="medium" handleSelectDifficulty={handleSelectDifficulty} allQuestions={allQuestions}/>
 
               {/* Hard */}
-              <button
-                onClick={() => handleSelectDifficulty('hard')}
-                className="w-full text-left p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #e5e5e5',
-                  borderRadius: '16px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#ef4444';
-                  e.currentTarget.style.background = '#fef2f2';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e5e5';
-                  e.currentTarget.style.background = '#ffffff';
-                }}>
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: '#fee2e2' }}>
-                    <Trophy className="w-6 h-6" style={{ color: '#ef4444' }} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-1" style={{ color: '#1a1a1a' }}>
-                      Hard
-                    </h3>
-                    <p className="text-sm" style={{ color: '#555555' }}>
-                      For advanced learners • {allQuestions.filter(q => q.difficulty === 'hard').length} questions
-                    </p>
-                  </div>
-                </div>
-              </button>
+              <QuizModeButton type="hard" handleSelectDifficulty={handleSelectDifficulty} allQuestions={allQuestions}/>
             </div>
           </div>
         </div>
@@ -464,13 +361,7 @@ export function Quiz() {
         {/* Header Section */}
         <div className="mb-12 animate-fade-up">
           {/* Back Button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 mb-6 text-base transition-all duration-300 hover:-translate-x-1"
-            style={{ color: '#555555' }}>
-            <ArrowLeft className="w-5 h-5" />
-            Back to Subject
-          </button>
+          <BackButton navigate={() => navigate(-1)} statement="Back to Subject"/>
 
           {/* Title and Progress */}
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
