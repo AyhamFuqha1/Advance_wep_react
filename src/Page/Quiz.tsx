@@ -290,7 +290,7 @@ export function Quiz() {
 
     showToast('Quiz submitted successfully!', 'success');
     
-//    navigate(`/quiz/${quizId}/result`);
+  navigate(`/quiz/${quizId}/result`);
   };
 
   const formatTime = (seconds: number) => {
@@ -306,9 +306,7 @@ export function Quiz() {
     return (
       <div className="min-h-screen" style={{ background: '#f7f7f5' }}>
         <Navbar />
-
         <div className="max-w-[700px] mx-auto px-4 md:px-8 py-20">
-          {/* Back Button */}
         <BackButton navigate={() => navigate(-1)} statement="Back to Subject"/>
           {/* Selection Card */}
           <div
@@ -433,7 +431,6 @@ export function Quiz() {
           <div className="space-y-3 mb-8">
             {currentQuestion.options.map((option) => {
               const isSelected = selectedAnswers[currentQuestionIndex] === option.id;
-
               return (
                 <button
                   key={option.id}

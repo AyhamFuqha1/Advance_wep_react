@@ -5,6 +5,7 @@ import SignUp from "../Page/Signup";
 import ProfilePage from "../Page/ProfilePage";
 import { ROUTES } from "../config/routes";
 import {Quiz} from "../Page/Quiz";
+import { QuizResult } from "../Page/Result";
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
@@ -13,6 +14,7 @@ const router = createBrowserRouter(
       <Route path={ROUTES.SIGNUP} element={<SignUp />} /> 
       <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
       <Route path={ROUTES.QUIZ} element={<Quiz />} />
+      <Route path={ROUTES.RESULT} element={<QuizResult />} />
     </Route>
   )
 );
