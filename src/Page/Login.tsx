@@ -21,26 +21,14 @@ function Login() {
   const navigate = useNavigate();
 
   const handleSignIn = (): void => {
-  if (!validateLogin(email, password)) {
-    setShake(true);
-    setTimeout(() => setShake(false), 500);
-    return;
-  }
-
-  setIsLoading(true);
-
-  setTimeout(() => {
-    const fakeUser = {
-      id: 1,
-      name: "Test User",
-      email: email,
-    };
-
-    localStorage.setItem("smartstudy_user", JSON.stringify(fakeUser));
-    setIsLoading(false);
-    navigate("/analytics");
-  }, 1000);
-};
+    if (!validateLogin(email, password)) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
+    setIsLoading(true);
+    setTimeout(() => setIsLoading(false), 2000);
+  };
 
   return (
     <div className="page">

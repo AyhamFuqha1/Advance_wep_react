@@ -24,6 +24,8 @@ interface StudyTask {
 }
 
 export default function StudyPlan() {
+  const navigate = useNavigate();
+
   // Mock study plan data
    
   const [tasks] = useState<StudyTask[]>([
