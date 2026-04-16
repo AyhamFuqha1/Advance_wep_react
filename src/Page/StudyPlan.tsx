@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
+import { getStudyPlans, generateStudyPlan, getAnalytics } from '../services/api';
 import { 
   BookOpen, 
   HelpCircle, 
@@ -10,8 +10,26 @@ import {
   Clock,
   XCircle,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Wand2
 } from 'lucide-react';
+
+interface ApiStudyPlan {
+  id: number;
+  user_id: number;
+  subject_id: number;
+  goal: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  subject?: {
+    id: number;
+    name: string;
+    color: string;
+  };
+}
 
 interface StudyTask {
   id: string;
@@ -24,75 +42,84 @@ interface StudyTask {
 }
 
 export default function StudyPlan() {
-  const navigate = useNavigate();
+  const [tasks, setTasks] = useState<StudyTask[]>([]);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
 
-  // Mock study plan data
-   
-  const [tasks] = useState<StudyTask[]>([
-    {
-      id: '1',
-      subject: 'Mathematics',
-      taskType: 'Review',
-      title: 'Review derivatives and integration',
-      scheduledDate: 'Tomorrow',
-      status: 'Pending',
-      color: '#3a6cf4'
-    },
-    {
-      id: '2',
-      subject: 'Physics',
-      taskType: 'Quiz',
-      title: 'Solve Thermodynamics quiz',
-      scheduledDate: 'Today',
-      status: 'Done',
-      color: '#10b981'
-    },
-    {
-      id: '3',
-      subject: 'Chemistry',
-      taskType: 'Summary',
-      title: 'Read summary of Organic Chemistry',
-      scheduledDate: 'Today',
-      status: 'Pending',
-      color: '#f59e0b'
-    },
-    {
-      id: '4',
-      subject: 'Biology',
-      taskType: 'Review',
-      title: 'Review Cell Biology chapter',
-      scheduledDate: 'Yesterday',
-      status: 'Missed',
-      color: '#8b5cf6'
-    },
-    {
-      id: '5',
-      subject: 'History',
-      taskType: 'Quiz',
-      title: 'Complete World War II quiz',
-      scheduledDate: 'Monday',
-      status: 'Pending',
-      color: '#ec4899'
-    },
-    {
-      id: '6',
-      subject: 'Mathematics',
-      taskType: 'Quiz',
-      title: 'Practice Linear Algebra problems',
-      scheduledDate: 'Tuesday',
-      status: 'Pending',
-      color: '#3a6cf4'
-    },
-  ]);
+  const loadStudyPlans = async () => {
+    try {
+      const data: ApiStudyPlan[] = await getStudyPlans();
+      const formattedTasks: StudyTask[] = data.map((plan) => ({
+  id: String(plan.id),
+  subject: plan.subject?.name || `Subject ${plan.subject_id}`,
+  taskType: getTaskType(plan.goal),
+  title: plan.goal,
+  scheduledDate: formatDateLabel(plan.start_date),
+  status: mapStatus(plan.status),
+  color: plan.subject?.color || '#8b5cf6',
+}));
 
-  // AI Suggested Plan - Priority tasks
-  const aiSuggestions = [
-    'Review weak topics in Chemistry',
-    'Complete pending quizzes',
-    'Revise last mistakes'
-  ];
+      
 
-  
+      setTasks(formattedTasks);
+    } catch (error) {
+      console.error('Error fetching study plans:', error);
+    }
+  };
+
+  const loadAiSuggestions = async () => {
+    try {
+      const analyticsData = await getAnalytics();
+
+      if (analyticsData?.recommendations && Array.isArray(analyticsData.recommendations)) {
+        setAiSuggestions(
+          analyticsData.recommendations.slice(0, 3).map((item: any) => item.message)
+        );
+      } else {
+        setAiSuggestions([
+          'Review weak topics in Chemistry',
+          'Complete pending quizzes',
+          'Revise last mistakes'
+        ]);
+      }
+    } catch (error) {
+      console.error('Error fetching analytics suggestions:', error);
+      setAiSuggestions([
+        'Review weak topics in Chemistry',
+        'Complete pending quizzes',
+        'Revise last mistakes'
+      ]);
+    }
+  };
+
+  useEffect(() => {
+    const initializePage = async () => {
+      try {
+        setLoading(true);
+        await Promise.all([loadStudyPlans(), loadAiSuggestions()]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializePage();
+  }, []);
+
+  const handleGenerateAIPlan = async () => {
+    try {
+      setGenerating(true);
+
+      await generateStudyPlan(1);
+
+      await loadStudyPlans();
+      await loadAiSuggestions();
+    } catch (error) {
+      console.error('Error generating AI study plan:', error);
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const getTaskIcon = (taskType: string) => {
     switch (taskType) {
@@ -136,30 +163,82 @@ export default function StudyPlan() {
     }
   };
 
+  
+
+  const getTaskType = (goal: string): 'Review' | 'Quiz' | 'Summary' => {
+    const text = goal.toLowerCase();
+
+    if (text.includes('quiz')) return 'Quiz';
+    if (text.includes('summary') || text.includes('read')) return 'Summary';
+    return 'Review';
+  };
+
+  const mapStatus = (status: string): 'Done' | 'Pending' | 'Missed' => {
+    const normalized = status.toLowerCase();
+
+    if (normalized === 'done' || normalized === 'completed') return 'Done';
+    if (normalized === 'missed') return 'Missed';
+    return 'Pending';
+  };
+
+  
+
+  const formatDateLabel = (dateString: string) => {
+    if (!dateString) return 'No date';
+
+    const taskDate = new Date(dateString);
+    const today = new Date();
+
+    const taskOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const diffTime = taskOnly.getTime() - todayOnly.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Tomorrow';
+    if (diffDays === -1) return 'Yesterday';
+
+    return taskDate.toLocaleDateString();
+  };
 
   return (
     <div className="min-h-screen" style={{ background: '#ffffff' }}>
       <Navbar />
       
       <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-20">
-        {/* Header */}
-        <div className="mb-12 animate-fade-up">
-          <h1 
-            className="font-serif mb-2"
-            style={{ 
-              fontSize: 'clamp(2rem, 5vw, 3rem)',
-              color: '#1a1a1a'
-            }}>
-            Study Plan
-          </h1>
-          <p 
-            className="text-lg"
-            style={{ color: '#555555' }}>
-            Your personalized study schedule
-          </p>
+        <div className="mb-12 animate-fade-up flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 
+              className="font-serif mb-2"
+              style={{ 
+                fontSize: 'clamp(2rem, 5vw, 3rem)',
+                color: '#1a1a1a'
+              }}>
+              Study Plan
+            </h1>
+            <p 
+              className="text-lg"
+              style={{ color: '#555555' }}>
+              Your personalized study schedule
+            </p>
+          </div>
+
+          <button
+            onClick={handleGenerateAIPlan}
+            disabled={generating}
+            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{
+              background: '#1a1a1a',
+              color: '#ffffff',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+            }}
+          >
+            <Wand2 className="w-4 h-4" />
+            {generating ? 'Generating...' : 'Generate AI Plan'}
+          </button>
         </div>
 
-        {/* AI Suggested Plan Section */}
         <div 
           className="mb-12 transition-all duration-300 animate-fade-up"
           style={{
@@ -183,7 +262,7 @@ export default function StudyPlan() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {aiSuggestions.map((suggestion, index) => (
               <div
-                key={suggestion}
+                key={`${suggestion}-${index}`}
                 className="flex items-center gap-3 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01]"
                 style={{
                   background: '#ffffff',
@@ -207,97 +286,99 @@ export default function StudyPlan() {
           </div>
         </div>
 
-        {/* Study Plan Cards */}
-        <div className="space-y-4">
-          {tasks.map((task, index) => {
-            const statusBadge = getStatusBadge(task.status);
-            
-            return (
-              <div
-                key={task.id}
-                className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-xl animate-fade-up cursor-pointer"
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #e5e5e5',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-                  animationDelay: `${0.25 + index * 0.08}s`
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#555555';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#e5e5e5';
-                }}>
-                
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  {/* Left Side - Subject + Task */}
-                  <div className="flex items-start gap-4 flex-1">
-                    {/* Subject Icon */}
-                    <div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: task.color }}>
-                      <div className="text-white">
-                        {getTaskIcon(task.taskType)}
+        {loading && (
+          <div className="text-center py-10">
+            <p style={{ color: '#555555' }}>Loading study plan...</p>
+          </div>
+        )}
+
+        {!loading && tasks.length > 0 && (
+          <div className="space-y-4">
+            {tasks.map((task, index) => {
+              const statusBadge = getStatusBadge(task.status);
+              
+              return (
+                <div
+                  key={task.id}
+                  className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-xl animate-fade-up cursor-pointer"
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #e5e5e5',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                    animationDelay: `${0.25 + index * 0.08}s`
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#555555';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e5e5e5';
+                  }}>
+                  
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div 
+                        className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: task.color }}>
+                        <div className="text-white">
+                          {getTaskIcon(task.taskType)}
+                        </div>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3 
+                            className="font-bold text-lg"
+                            style={{ color: '#1a1a1a' }}>
+                            {task.subject}
+                          </h3>
+                          <span 
+                            className="px-3 py-1 rounded-full text-xs font-medium"
+                            style={{ 
+                              background: '#f7f7f5',
+                              color: '#555555'
+                            }}>
+                            {task.taskType}
+                          </span>
+                        </div>
+
+                        <p 
+                          className="text-base mb-2"
+                          style={{ color: '#555555' }}>
+                          {task.title}
+                        </p>
+
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" style={{ color: '#777777' }} />
+                          <span 
+                            className="text-sm"
+                            style={{ color: '#777777' }}>
+                            {task.scheduledDate}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Task Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 
-                          className="font-bold text-lg"
-                          style={{ color: '#1a1a1a' }}>
-                          {task.subject}
-                        </h3>
-                        <span 
-                          className="px-3 py-1 rounded-full text-xs font-medium"
-                          style={{ 
-                            background: '#f7f7f5',
-                            color: '#555555'
-                          }}>
-                          {task.taskType}
-                        </span>
+                    <div className="flex items-center justify-end md:justify-start">
+                      <div 
+                        className="px-4 py-2 rounded-full flex items-center gap-2 font-medium text-sm"
+                        style={{ 
+                          background: statusBadge.bg,
+                          color: statusBadge.color
+                        }}>
+                        {statusBadge.icon}
+                        {task.status}
                       </div>
-
-                      <p 
-                        className="text-base mb-2"
-                        style={{ color: '#555555' }}>
-                        {task.title}
-                      </p>
-
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" style={{ color: '#777777' }} />
-                        <span 
-                          className="text-sm"
-                          style={{ color: '#777777' }}>
-                          {task.scheduledDate}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Side - Status Badge */}
-                  <div className="flex items-center justify-end md:justify-start">
-                    <div 
-                      className="px-4 py-2 rounded-full flex items-center gap-2 font-medium text-sm"
-                      style={{ 
-                        background: statusBadge.bg,
-                        color: statusBadge.color
-                      }}>
-                      {statusBadge.icon}
-                      {task.status}
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
-        {/* Empty State */}
-        {tasks.length === 0 && (
+        {!loading && tasks.length === 0 && (
           <div className="text-center py-20 animate-fade-up">
             <div 
               className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center"

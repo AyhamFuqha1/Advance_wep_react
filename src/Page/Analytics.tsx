@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 
 import Navbar from '../components/Navbar';
+import { getAnalytics } from '../services/api';
 import { 
   TrendingUp, 
   Target, 
@@ -49,117 +50,203 @@ interface Recommendation {
   message: string;
 }
 
+interface AnalyticsResponse {
+  stats: {
+    success_rate: number;
+    average_score: number;
+    completed_quizzes: number;
+    weak_topics: number;
+  };
+  subject_performance: {
+    subject_id: number;
+    subject_name?: string;
+    subject_color?: string;
+    score: number;
+    success_rate: number;
+  }[];
+  progress_over_time: {
+    date: string;
+    score: number;
+  }[];
+  recommendations: {
+    id: number;
+    user_id: number;
+    message: string;
+    type: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+  weak_areas: {
+    id: number;
+    user_id: number;
+    subject_id: number;
+    topic_name: string;
+    weakness_level: string;
+    times_mistaken: number;
+    created_at: string;
+    updated_at: string;
+    subject?: {
+      id: number;
+      name: string;
+      color: string;
+    };
+  }[];
+}
+
 export default function Analytics() {
   const navigate = useNavigate();
-  
 
-  // Mock stats data
-  const stats: StatCard[] = [
-    {
-      label: 'Success Rate',
-      value: '78%',
-      icon: <TrendingUp className="w-6 h-6" />
-    },
-    {
-      label: 'Average Score',
-      value: '82',
-      icon: <Target className="w-6 h-6" />
-    },
-    {
-      label: 'Completed Quizzes',
-      value: '24',
-      icon: <CheckCircle2 className="w-6 h-6" />
-    },
-    {
-      label: 'Weak Topics',
-      value: '3',
-      icon: <AlertCircle className="w-6 h-6" />
-    }
-  ];
+  const [stats, setStats] = useState<StatCard[]>([]);
+  const [subjectProgress, setSubjectProgress] = useState<SubjectProgress[]>([]);
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [todaysFocus, setTodaysFocus] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock subject progress data
-  const subjectProgress: SubjectProgress[] = [
-    { subject: 'Mathematics', percentage: 80, color: '#3a6cf4' },
-    { subject: 'Physics', percentage: 65, color: '#10b981' },
-    { subject: 'Chemistry', percentage: 50, color: '#f59e0b' },
-    { subject: 'Biology', percentage: 72, color: '#8b5cf6' },
-    { subject: 'History', percentage: 85, color: '#ec4899' },
-  ];
-
-  // Mock performance over time data
-  const performanceData: PerformanceData[] = [
-    { date: 'Week 1', score: 65 },
-    { date: 'Week 2', score: 72 },
-    { date: 'Week 3', score: 68 },
-    { date: 'Week 4', score: 78 },
-    { date: 'Week 5', score: 82 },
-    { date: 'Week 6', score: 85 },
-  ];
-
-  // Mock subject performance data for bar chart
-  const subjectPerformanceData = subjectProgress.map(sp => ({
-    subject: sp.subject,
-    score: sp.percentage
-  }));
-
-  // Mock recommendations
-  const recommendations: Recommendation[] = [
-    {
-      icon: <BookOpen className="w-5 h-5" />,
-      title: 'Focus on Chemistry',
-      message: 'You have weak performance in Organic Chemistry topics'
-    },
-    {
-      icon: <Brain className="w-5 h-5" />,
-      title: 'Review Calculus',
-      message: 'Revisit derivatives and integration concepts'
-    },
-    {
-      icon: <RefreshCw className="w-5 h-5" />,
-      title: 'Retake Physics Quiz',
-      message: 'Improve your understanding of Thermodynamics'
-    }
-  ];
-
-  // Today's Focus - AI priorities
-  const todaysFocus = [
-    'Review Calculus derivatives',
-    'Retake Physics Quiz',
-    'Focus on Organic Chemistry'
-  ];
-
-  // State for progress bar animations
   const [animateProgress, setAnimateProgress] = useState(false);
 
-  
-
-  // Trigger progress bar animation on mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnimateProgress(true);
-    }, 300);
-    return () => clearTimeout(timer);
+    const fetchData = async () => {
+      try {
+        const data: AnalyticsResponse = await getAnalytics();
+
+        setStats([
+          {
+            label: 'Success Rate',
+            value: `${data.stats.success_rate}%`,
+            icon: <TrendingUp className="w-6 h-6" />
+          },
+          {
+            label: 'Average Score',
+            value: data.stats.average_score.toFixed(2),
+            icon: <Target className="w-6 h-6" />
+          },
+          {
+            label: 'Completed Quizzes',
+            value: String(data.stats.completed_quizzes),
+            icon: <CheckCircle2 className="w-6 h-6" />
+          },
+          {
+            label: 'Weak Topics',
+            value: String(data.stats.weak_topics),
+            icon: <AlertCircle className="w-6 h-6" />
+          }
+        ]);
+
+        setSubjectProgress(
+  data.subject_performance.map((item) => ({
+    subject: item.subject_name || `Subject ${item.subject_id}`,
+    percentage: item.success_rate,
+    color: item.subject_color || '#8b5cf6'
+  }))
+);
+
+        setPerformanceData(data.progress_over_time);
+
+        setRecommendations(
+          data.recommendations.map((rec) => ({
+            icon: getRecommendationIcon(rec.type),
+            title: formatRecommendationTitle(rec.type, rec.message),
+            message: rec.message
+          }))
+        );
+
+        setTodaysFocus(
+          data.recommendations.slice(0, 3).map((rec) => rec.message)
+        );
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const handleRecommendationClick = (title: string) => {
-    // Simulate navigation based on recommendation
-    if (title.includes('Chemistry')) {
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => {
+        setAnimateProgress(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+ 
+
+  
+
+  const getRecommendationIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'weak_area':
+        return <BookOpen className="w-5 h-5" />;
+      case 'review':
+        return <Brain className="w-5 h-5" />;
+      case 'quiz':
+        return <RefreshCw className="w-5 h-5" />;
+      default:
+        return <Sparkles className="w-5 h-5" />;
+    }
+  };
+
+  const formatRecommendationTitle = (type: string, message: string) => {
+    switch (type.toLowerCase()) {
+      case 'weak_area':
+        return 'Focus on Weak Areas';
+      case 'review':
+        return 'Review Important Topics';
+      case 'quiz':
+        return 'Practice More Quizzes';
+      default:
+        return message.length > 25 ? message.slice(0, 25) + '...' : message;
+    }
+  };
+
+  const handleRecommendationClick = (title: string, message: string) => {
+    const text = `${title} ${message}`.toLowerCase();
+
+    if (text.includes('chemistry') || text.includes('organic')) {
       navigate('/subject/3');
-    } else if (title.includes('Calculus') || title.includes('Math')) {
+    } else if (text.includes('calculus') || text.includes('math') || text.includes('integration')) {
       navigate('/subject/1');
-    } else if (title.includes('Physics')) {
+    } else if (text.includes('physics') || text.includes('thermodynamics')) {
       navigate('/subject/2');
     }
   };
 
+  const subjectPerformanceData = subjectProgress.map((sp) => ({
+    subject: sp.subject,
+    score: sp.percentage
+  }));
 
+  if (loading) {
+    return (
+      <div className="min-h-screen" style={{ background: '#ffffff' }}>
+        <Navbar />
+        <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-20">
+          <div className="text-center py-20 animate-fade-up">
+            <h3
+              className="text-2xl font-serif mb-2"
+              style={{ color: '#1a1a1a' }}
+            >
+              Loading analytics...
+            </h3>
+            <p style={{ color: '#555555' }}>
+              Please wait while we fetch your performance data
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ background: '#ffffff' }}>
       <Navbar />
       
       <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-20">
-        {/* Header */}
         <div className="mb-12 animate-fade-up">
           <h1 
             className="font-serif mb-2"
@@ -176,7 +263,6 @@ export default function Analytics() {
           </p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {stats.map((stat, index) => (
             <div
@@ -222,7 +308,6 @@ export default function Analytics() {
           ))}
         </div>
 
-        {/* Today's Focus Section - AI Priorities */}
         <div 
           className="mb-12 transition-all duration-300 animate-fade-up"
           style={{
@@ -270,7 +355,6 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Performance Progress Section */}
         <div 
           className="mb-12 transition-all duration-300 animate-fade-up"
           style={{
@@ -331,9 +415,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          {/* Line Chart - Progress Over Time */}
           <div 
             className="transition-all duration-300 animate-fade-up"
             style={{
@@ -394,7 +476,6 @@ export default function Analytics() {
             </ResponsiveContainer>
           </div>
 
-          {/* Bar Chart - Subject Performance */}
           <div 
             className="transition-all duration-300 animate-fade-up"
             style={{
@@ -456,7 +537,6 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Recommendations Section */}
         <div 
           className="animate-fade-up"
           style={{
@@ -472,7 +552,7 @@ export default function Analytics() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {recommendations.map((rec, index) => (
               <div
-                key={rec.title}
+                key={`${rec.title}-${index}`}
                 className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-xl animate-fade-up cursor-pointer"
                 style={{
                   background: '#f7f7f5',
@@ -490,7 +570,7 @@ export default function Analytics() {
                   e.currentTarget.style.background = '#f7f7f5';
                   e.currentTarget.style.borderColor = '#e5e5e5';
                 }}
-                onClick={() => handleRecommendationClick(rec.title)}>
+                onClick={() => handleRecommendationClick(rec.title, rec.message)}>
                 
                 <div className="flex items-center justify-between mb-3">
                   <div 
