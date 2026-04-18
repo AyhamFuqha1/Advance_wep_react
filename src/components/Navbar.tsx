@@ -6,7 +6,7 @@ import "../css/Navbar.css";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../config/routes";
 
-function Navbar(){
+function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
@@ -18,18 +18,51 @@ function Navbar(){
   return (
     <>
       <nav className="navbar">
+        <div className="nav-top">
+          <div className="nav-right">
+            <a onClick={() => navigate(ROUTES.LOGIN)} className="nav-login">
+              Log In
+            </a>
 
-        <div className="nav-left">
+            <a
+              id="nav-signup"
+              className="icon-link"
+              onClick={() => navigate(ROUTES.SIGNUP)}
+            >
+              <span className="signup-icon">
+                <MdPersonAddAlt />
+              </span>
+            </a>
+          </div>
+
+          <div className="logo">
+            <img src={logo} alt="SmartStudy Logo" />
+          </div>
+
+          <button
+            className={`hamburger ${menuOpen ? "open" : ""}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className="line"></span>
+            <span className="line"></span>
+            <span className="line"></span>
+          </button>
+        </div>
+
+        <div className="nav-links-under-logo">
           <a onClick={() => navigate(ROUTES.HOME)} id="nav-home">
-            <span className="home-icon"><FaHome /></span>
+            <span className="home-icon">
+              <FaHome />
+            </span>
           </a>
 
           <a onClick={() => navigate(ROUTES.DASHBOARD)} className="active-link">
             Dashboard
           </a>
 
-          <a onClick={() => navigate(ROUTES.SUBJECTS)}>
-            Subjects
+          <a onClick={() => navigate(ROUTES.PROFILE)}>
+            Summaries
           </a>
 
           <a onClick={() => navigate(ROUTES.ANALYTICS)} id="nav-analytics">
@@ -41,31 +74,15 @@ function Navbar(){
             </span>
             Analytics
           </a>
-        </div>
 
-        <div className="logo">
-          <img src={logo} alt="SmartStudy Logo" />
-        </div>
-
-        <div className="nav-right">
-          <a onClick={() => navigate(ROUTES.LOGIN)} className="nav-login">
-            Log In
+          <a onClick={() => navigate(ROUTES.PROFILE)}>
+            Quizzes
           </a>
 
-          <a id="nav-signup" className="icon-link" onClick={() => navigate(ROUTES.SIGNUP)}>
-            <span className="signup-icon"><MdPersonAddAlt /></span>
+          <a onClick={() => navigate(ROUTES.PROFILE)}>
+            Study Plan
           </a>
         </div>
-
-        <button
-          className={`hamburger ${menuOpen ? "open" : ""}`}
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className="line"></span>
-          <span className="line"></span>
-          <span className="line"></span>
-        </button>
       </nav>
 
       <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>

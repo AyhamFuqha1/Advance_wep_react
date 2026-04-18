@@ -24,8 +24,8 @@
 }
 .back-btn:hover { background: rgba(0,0,0,0.05); transform: translateX(-3px); }
 
-.logo { display: flex; align-items: center; gap: 8px; }
-.logo-img { height: 28px; width: auto; }
+.logo1 { display: flex; align-items: center; gap: 8px; }
+.logo-img1 { height: 7vw; width: auto; }
 
 .navbar1-spacer { width: 100px; }
 

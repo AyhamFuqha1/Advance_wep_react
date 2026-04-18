@@ -38,8 +38,8 @@ function Login() {
           <span>Back</span>
         </button>
 
-        <div className="logo">
-          <img src={logo} alt="logo" className="logo-img" />
+        <div className="logo1">
+          <img src={logo} alt="logo" className="logo-img1" />
         </div>
 
         <div className="navbar1-spacer" />

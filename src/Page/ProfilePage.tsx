@@ -1,8 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
-  FiCamera, FiUser, FiBookOpen, FiZap,
-  FiMapPin, FiLinkedin, FiGithub,
-  FiSettings, FiCheckCircle, FiLock, FiTrash2, FiEdit2, FiLogOut,
+  FiCamera, FiUser, FiMapPin, FiLinkedin, FiGithub,
+  FiSettings,  FiLock, FiTrash2, FiEdit2, FiLogOut,
 } from "react-icons/fi";
 import "../css/ProfilePage.css";
 import Navbar from "../components/Navbar";
@@ -11,11 +10,8 @@ import DeleteModal from "../components/DeleteModal";
 import PasswordModal from "../components/PasswordModal";
 import LogoutModal from "../components/LogoutModal";
 
-import { tagColor, DEFAULT_SUBJECTS } from "../data/profileData";
 import { validatePassword, validateDeleteConfirm } from "../validation/profileValidation";
-import type  {PasswordState } from "../interfaces/profile";
-
-import { useEffect } from "react";
+import type { PasswordState } from "../interfaces/profile";
 
 function useScrollReveal(): void {
   useEffect(() => {
@@ -34,7 +30,7 @@ function useScrollReveal(): void {
   }, []);
 }
 
-export default function ProfilePage(){
+export default function ProfilePage() {
   useScrollReveal();
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -42,15 +38,6 @@ export default function ProfilePage(){
   const pickAvatar = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const f = e.target.files?.[0];
     if (f) setAvatar(URL.createObjectURL(f));
-  };
-
-  const [subjects, setSubjects] = useState<string[]>(DEFAULT_SUBJECTS);
-  const [newSubject, setNewSubject] = useState<string>("");
-  const [addingSubject, setAdding] = useState<boolean>(false);
-  const addSubject = (): void => {
-    const v = newSubject.trim();
-    if (v && !subjects.includes(v)) { setSubjects([...subjects, v]); showToast("Subject added!"); }
-    setNewSubject(""); setAdding(false);
   };
 
   const [showDelete, setShowDelete] = useState<boolean>(false);
@@ -108,12 +95,11 @@ export default function ProfilePage(){
     <div>
       <Navbar />
 
-   
       <div className="banner" />
 
       <div className="wrap">
 
-       
+        {/* PROFILE TOP */}
         <div className="profile-top">
           <div className="avatar-wrap" onClick={() => fileRef.current?.click()}>
             <div className="avatar-inner">
@@ -162,9 +148,9 @@ export default function ProfilePage(){
           </div>
         </div>
 
-  
-        <div className="row-full">
-          <div className="card reveal-card">
+        {/* PERSONAL INFORMATION */}
+        <div className="section reveal-card">
+          <div className="card">
             <div className="card-head">
               <div className="card-icon card-icon-blue">
                 <FiUser className="card-react-icon icon-blue" />
@@ -179,9 +165,7 @@ export default function ProfilePage(){
                 <Field label="Email Address">
                   <input className="form-input" type="email" />
                 </Field>
-                <Field label="Phone Number">
-                  <input className="form-input" type="tel" />
-                </Field>
+           
                 <Field label="Date of Birth">
                   <input className="form-input" type="date" />
                 </Field>
@@ -200,122 +184,17 @@ export default function ProfilePage(){
           </div>
         </div>
 
-       
-        <div className="row-two-col">
-
-          <div className="card reveal-card">
-            <div className="card-head">
-              <div className="card-icon card-icon-teal">
-                <FiBookOpen className="card-react-icon icon-teal" />
-              </div>
-              <h2 className="card-title">Academic Information</h2>
-            </div>
-            <div className="card-body">
-              <Field label="Education Level">
-                <select className="form-select">
-                  <option>High School</option>
-                  <option>University – Bachelor's</option>
-                  <option>University – Master's</option>
-                  <option>Self-Learner</option>
-                </select>
-              </Field>
-              <Field label="Major / Specialization">
-                <input className="form-input" />
-              </Field>
-              <Field label="Institution">
-                <input className="form-input" />
-              </Field>
-              <Field label="Academic Year">
-                <select className="form-select">
-                  <option>First Year</option>
-                  <option>Second Year</option>
-                  <option>Third Year</option>
-                  <option>Fourth Year</option>
-                  <option>Fifth Year</option>
-                </select>
-              </Field>
-            </div>
-          </div>
-
-          <div className="card reveal-card">
-            <div className="card-head">
-              <div className="card-icon card-icon-purple">
-                <FiZap className="card-react-icon icon-purple" />
-              </div>
-              <h2 className="card-title">Interests</h2>
-            </div>
-            <div className="card-body">
-              <Field label="Favorite Subjects">
-                <div className="tags">
-                  {subjects.map((s: string, i: number) => (
-                    <span key={s} className={`tag ${tagColor(i)}`}>
-                      {s}
-                      <span className="tag-remove" onClick={() => setSubjects(subjects.filter((x) => x !== s))}>✕</span>
-                    </span>
-                  ))}
-                  {addingSubject ? (
-                    <div className="tag-add-input">
-                      <input
-                        className="form-input tag-input"
-                        autoFocus
-                        value={newSubject}
-                        placeholder="Subject name…"
-                        onChange={(e) => setNewSubject(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && addSubject()}
-                      />
-                      <button className="btn btn-primary" style={{ padding: "5px 12px", fontSize: ".82rem" }} onClick={addSubject}>Add</button>
-                      <button className="btn btn-ghost" style={{ padding: "5px 10px", fontSize: ".82rem" }} onClick={() => setAdding(false)}>✕</button>
-                    </div>
-                  ) : (
-                    <button className="tag-add-btn" onClick={() => setAdding(true)}>+ Add Subject</button>
-                  )}
-                </div>
-              </Field>
-              <div className="divider" />
-              <Field label="Learning Goal">
-                <select className="form-select">
-                  <option>Academic Excellence</option>
-                  <option>Professional Skill Development</option>
-                  <option>Exam Preparation</option>
-                </select>
-              </Field>
-              <Field label="Daily Study Hours">
-                <select className="form-select">
-                  <option>Less than 1 hour</option>
-                  <option>1 – 2 hours</option>
-                  <option>2 – 4 hours</option>
-                  <option>More than 4 hours</option>
-                </select>
-              </Field>
-            </div>
-          </div>
-
-        </div>
-
         {/* LOCATION & SOCIAL */}
-        <div className="row-full">
-          <div className="card reveal-card">
+        <div className="section reveal-card">
+          <div className="card">
             <div className="card-head">
               <div className="card-icon card-icon-green">
                 <FiMapPin className="card-react-icon icon-green" />
               </div>
-              <h2 className="card-title">Location &amp; Social</h2>
+              <h2 className="card-title"> Social</h2>
             </div>
             <div className="card-body">
-              <div className="location-fields">
-                <Field label="Country">
-                  <select className="form-select">
-                    <option>Palestine 🇵🇸</option>
-                    <option>Jordan</option>
-                    <option>Saudi Arabia</option>
-                    <option>UAE</option>
-                    <option>Egypt</option>
-                  </select>
-                </Field>
-                <Field label="City">
-                  <input className="form-input" />
-                </Field>
-              </div>
+             
               <div className="divider" />
               <div className="social-grid">
                 <div className="social-item">
@@ -360,8 +239,8 @@ export default function ProfilePage(){
         </div>
 
         {/* ACCOUNT SETTINGS */}
-        <div className="row-full">
-          <div className="card reveal-card">
+        <div className="section reveal-card">
+          <div className="card">
             <div className="card-head">
               <div className="card-icon card-icon-yellow">
                 <FiSettings className="card-react-icon icon-yellow settings-gear" />
@@ -369,13 +248,8 @@ export default function ProfilePage(){
               <h2 className="card-title">Account Settings</h2>
             </div>
             <div className="card-body">
-              <div className="account-row">
-                <div>
-                  <div className="account-row-label">Account Status</div>
-                  <div className="account-row-sub">Your account is active and verified</div>
-                </div>
-                <span className="badge badge-active"><FiCheckCircle /> Active</span>
-              </div>
+             
+                
               <div className="account-row">
                 <div>
                   <div className="account-row-label">Change Password</div>
@@ -409,7 +283,6 @@ export default function ProfilePage(){
           onClose={closeDel}
         />
       )}
-
       {showPw && (
         <PasswordModal
           pw={pw}
@@ -419,7 +292,6 @@ export default function ProfilePage(){
           onClose={closePw}
         />
       )}
-
       {showLogout && (
         <LogoutModal
           onConfirm={handleLogout}
@@ -427,9 +299,7 @@ export default function ProfilePage(){
         />
       )}
 
-      {/* TOAST */}
       <div className={`toast ${toast ? "show" : ""}`}>{toast}</div>
-
     </div>
   );
 }
