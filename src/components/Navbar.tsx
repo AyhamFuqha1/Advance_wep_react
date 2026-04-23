@@ -5,7 +5,6 @@ import { MdPersonAddAlt } from "react-icons/md";
 import "../css/Navbar.css";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../config/routes";
-
 function Navbar(){
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -40,6 +39,9 @@ function Navbar(){
               <span className="bar"></span>
             </span>
             Analytics
+          </a>
+          <a onClick={() => navigate(ROUTES.STUDY_PLAN)}>
+           Study Plan
           </a>
         </div>
 
@@ -84,7 +86,9 @@ function Navbar(){
         <a onClick={() => handleNav(ROUTES.ANALYTICS)}>
           Analytics
         </a>
-
+        <a onClick={() => handleNav(ROUTES.STUDY_PLAN)}>
+          Study Plan
+        </a>
         <a onClick={() => handleNav(ROUTES.LOGIN)}>
           Log In
         </a>

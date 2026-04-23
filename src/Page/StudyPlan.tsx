@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { getStudyPlans, generateStudyPlan, getAnalytics } from '../services/api';
-import { 
-  BookOpen, 
-  HelpCircle, 
+import {
+  BookOpen,
+  HelpCircle,
   FileText,
   Calendar,
   CheckCircle2,
@@ -49,22 +49,22 @@ export default function StudyPlan() {
 
   const loadStudyPlans = async () => {
     try {
-      const data: ApiStudyPlan[] = await getStudyPlans();
-      const formattedTasks: StudyTask[] = data.map((plan) => ({
-  id: String(plan.id),
-  subject: plan.subject?.name || `Subject ${plan.subject_id}`,
-  taskType: getTaskType(plan.goal),
-  title: plan.goal,
-  scheduledDate: formatDateLabel(plan.start_date),
-  status: mapStatus(plan.status),
-  color: plan.subject?.color || '#8b5cf6',
-}));
+      const data: ApiStudyPlan[] = await getStudyPlans(1);
 
-      
+      const formattedTasks: StudyTask[] = data.map((plan) => ({
+        id: String(plan.id),
+        subject: plan.subject?.name || `Subject ${plan.subject_id}`,
+        taskType: getTaskType(plan.goal),
+        title: plan.goal,
+        scheduledDate: formatDateLabel(plan.start_date),
+        status: mapStatus(plan.status),
+        color: plan.subject?.color || '#8b5cf6',
+      }));
 
       setTasks(formattedTasks);
     } catch (error) {
       console.error('Error fetching study plans:', error);
+      setTasks([]);
     }
   };
 
@@ -77,19 +77,11 @@ export default function StudyPlan() {
           analyticsData.recommendations.slice(0, 3).map((item: any) => item.message)
         );
       } else {
-        setAiSuggestions([
-          'Review weak topics in Chemistry',
-          'Complete pending quizzes',
-          'Revise last mistakes'
-        ]);
+        setAiSuggestions([]);
       }
     } catch (error) {
       console.error('Error fetching analytics suggestions:', error);
-      setAiSuggestions([
-        'Review weak topics in Chemistry',
-        'Complete pending quizzes',
-        'Revise last mistakes'
-      ]);
+      setAiSuggestions([]);
     }
   };
 
@@ -109,9 +101,7 @@ export default function StudyPlan() {
   const handleGenerateAIPlan = async () => {
     try {
       setGenerating(true);
-
       await generateStudyPlan(1);
-
       await loadStudyPlans();
       await loadAiSuggestions();
     } catch (error) {
@@ -163,8 +153,6 @@ export default function StudyPlan() {
     }
   };
 
-  
-
   const getTaskType = (goal: string): 'Review' | 'Quiz' | 'Summary' => {
     const text = goal.toLowerCase();
 
@@ -180,8 +168,6 @@ export default function StudyPlan() {
     if (normalized === 'missed') return 'Missed';
     return 'Pending';
   };
-
-  
 
   const formatDateLabel = (dateString: string) => {
     if (!dateString) return 'No date';
@@ -205,19 +191,19 @@ export default function StudyPlan() {
   return (
     <div className="min-h-screen" style={{ background: '#ffffff' }}>
       <Navbar />
-      
+
       <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-20">
         <div className="mb-12 animate-fade-up flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 
+            <h1
               className="font-serif mb-2"
-              style={{ 
+              style={{
                 fontSize: 'clamp(2rem, 5vw, 3rem)',
                 color: '#1a1a1a'
               }}>
               Study Plan
             </h1>
-            <p 
+            <p
               className="text-lg"
               style={{ color: '#555555' }}>
               Your personalized study schedule
@@ -239,7 +225,7 @@ export default function StudyPlan() {
           </button>
         </div>
 
-        <div 
+        <div
           className="mb-12 transition-all duration-300 animate-fade-up"
           style={{
             background: 'linear-gradient(135deg, #f7f7f5 0%, #ffffff 100%)',
@@ -249,10 +235,10 @@ export default function StudyPlan() {
             boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
             animationDelay: '0.1s'
           }}>
-          
+
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5" style={{ color: '#555555' }} />
-            <h2 
+            <h2
               className="font-serif text-xl"
               style={{ color: '#1a1a1a' }}>
               AI Suggested Plan
@@ -260,29 +246,42 @@ export default function StudyPlan() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {aiSuggestions.map((suggestion, index) => (
+            {aiSuggestions.length > 0 ? (
+              aiSuggestions.map((suggestion, index) => (
+                <div
+                  key={`${suggestion}-${index}`}
+                  className="flex items-center gap-3 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01]"
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #e5e5e5',
+                    borderRadius: '12px',
+                    padding: '16px',
+                    animationDelay: `${0.15 + index * 0.05}s`
+                  }}>
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: '#f7f7f5' }}>
+                    <ArrowRight className="w-4 h-4" style={{ color: '#555555' }} />
+                  </div>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: '#1a1a1a' }}>
+                    {suggestion}
+                  </p>
+                </div>
+              ))
+            ) : (
               <div
-                key={`${suggestion}-${index}`}
-                className="flex items-center gap-3 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01]"
                 style={{
                   background: '#ffffff',
                   border: '1px solid #e5e5e5',
                   borderRadius: '12px',
                   padding: '16px',
-                  animationDelay: `${0.15 + index * 0.05}s`
+                  color: '#777777'
                 }}>
-                <div 
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: '#f7f7f5' }}>
-                  <ArrowRight className="w-4 h-4" style={{ color: '#555555' }} />
-                </div>
-                <p 
-                  className="text-sm font-medium"
-                  style={{ color: '#1a1a1a' }}>
-                  {suggestion}
-                </p>
+                No AI suggestions available yet.
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -296,7 +295,7 @@ export default function StudyPlan() {
           <div className="space-y-4">
             {tasks.map((task, index) => {
               const statusBadge = getStatusBadge(task.status);
-              
+
               return (
                 <div
                   key={task.id}
@@ -315,10 +314,10 @@ export default function StudyPlan() {
                   onMouseLeave={(e) => {
                     e.currentTarget.style.borderColor = '#e5e5e5';
                   }}>
-                  
+
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex items-start gap-4 flex-1">
-                      <div 
+                      <div
                         className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{ background: task.color }}>
                         <div className="text-white">
@@ -328,14 +327,14 @@ export default function StudyPlan() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <h3 
+                          <h3
                             className="font-bold text-lg"
                             style={{ color: '#1a1a1a' }}>
                             {task.subject}
                           </h3>
-                          <span 
+                          <span
                             className="px-3 py-1 rounded-full text-xs font-medium"
-                            style={{ 
+                            style={{
                               background: '#f7f7f5',
                               color: '#555555'
                             }}>
@@ -343,7 +342,7 @@ export default function StudyPlan() {
                           </span>
                         </div>
 
-                        <p 
+                        <p
                           className="text-base mb-2"
                           style={{ color: '#555555' }}>
                           {task.title}
@@ -351,7 +350,7 @@ export default function StudyPlan() {
 
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" style={{ color: '#777777' }} />
-                          <span 
+                          <span
                             className="text-sm"
                             style={{ color: '#777777' }}>
                             {task.scheduledDate}
@@ -361,9 +360,9 @@ export default function StudyPlan() {
                     </div>
 
                     <div className="flex items-center justify-end md:justify-start">
-                      <div 
+                      <div
                         className="px-4 py-2 rounded-full flex items-center gap-2 font-medium text-sm"
-                        style={{ 
+                        style={{
                           background: statusBadge.bg,
                           color: statusBadge.color
                         }}>
@@ -380,17 +379,17 @@ export default function StudyPlan() {
 
         {!loading && tasks.length === 0 && (
           <div className="text-center py-20 animate-fade-up">
-            <div 
+            <div
               className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center"
               style={{ background: '#f7f7f5' }}>
               <Calendar className="w-12 h-12" style={{ color: '#777777' }} />
             </div>
-            <h3 
+            <h3
               className="text-2xl font-serif mb-2"
               style={{ color: '#1a1a1a' }}>
               No study tasks yet
             </h3>
-            <p 
+            <p
               className="mb-8"
               style={{ color: '#555555' }}>
               Your personalized study plan will appear here
