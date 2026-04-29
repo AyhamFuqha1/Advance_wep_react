@@ -8,6 +8,8 @@ import "../css/Login.css";
 import { useNavigate } from "react-router-dom";
 import { validateLogin } from "../validation/authValidation";
 import { ROUTES } from "../config/routes";
+import api from "../config/axios.config";
+import { type LoginErrors } from "../interfaces/auth"; 
 
 function Login() {
   const [email, setEmail] = useState<string>("");
@@ -17,17 +19,60 @@ function Login() {
   const [passwordFocused, setPasswordFocused] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [shake, setShake] = useState<boolean>(false);
+  const [errors, setErrors] = useState<LoginErrors>({});
+  const [serverError, setServerError] = useState<string>("");
 
   const navigate = useNavigate();
 
-  const handleSignIn = (): void => {
-    if (!validateLogin(email, password)) {
+  const handleSignIn = async (): Promise<void> => {
+    setServerError("");
+
+    const errs = validateLogin(email, password); 
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
     }
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 2000);
+
+    try {
+      setErrors({});
+      setIsLoading(true);
+
+      const response = await api.post("/login", {
+        email,
+        password,
+      });
+
+      localStorage.setItem("token", response.data.token);
+
+      if (response.data.user) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            full_name: response.data.user.full_name,
+            username: response.data.user.username,
+            email: response.data.user.email,
+            profile_image: response.data.user.profile_image
+              ? `${import.meta.env.VITE_STORAGE_URL}/${response.data.user.profile_image}` // ✅
+              : null,
+          })
+        );
+      }
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+
+      if (error.response?.data?.message) {
+        setServerError(error.response.data.message);
+      } else {
+        setServerError("Login failed");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,12 +108,16 @@ function Login() {
                 className="input"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrors((p) => ({ ...p, email: "" })); 
+                }}
                 onFocus={() => setEmailFocused(true)}
                 onBlur={() => setEmailFocused(false)}
               />
               <MdEmail className={`icon ${emailFocused || email ? "icon-on" : ""}`} />
             </div>
+            {errors.email && <p className="field-error">{errors.email}</p>} 
           </div>
 
           <div className="field">
@@ -79,18 +128,25 @@ function Login() {
                 className="input"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrors((p) => ({ ...p, password: "" })); 
+                }}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
               />
               <span className="icon eye-btn" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword
-                  ? <AiFillEyeInvisible className={passwordFocused || password ? "icon-on" : ""} />
-                  : <AiFillEye className={passwordFocused || password ? "icon-on" : ""} />
-                }
+                {showPassword ? (
+                  <AiFillEyeInvisible className={passwordFocused || password ? "icon-on" : ""} />
+                ) : (
+                  <AiFillEye className={passwordFocused || password ? "icon-on" : ""} />
+                )}
               </span>
             </div>
+            {errors.password && <p className="field-error">{errors.password}</p>}
           </div>
+
+          {serverError && <p className="field-error">{serverError}</p>}
 
           <button
             className={`signin-btn ${isLoading ? "loading" : ""}`}
@@ -110,6 +166,6 @@ function Login() {
       </main>
     </div>
   );
-};
+}
 
 export default Login;

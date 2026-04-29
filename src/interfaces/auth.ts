@@ -11,6 +11,11 @@ export interface LoginFormState {
   password: string;
 }
 
+export interface LoginErrors {
+  email?: string;
+  password?: string;
+}
+
 export interface SignUpErrors {
   fullName?: string;
   email?: string;

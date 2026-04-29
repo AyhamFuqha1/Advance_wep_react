@@ -6,6 +6,6 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/Signup",
   PROFILE: "/Profile",
-
+StudyPlan:"/StudyPlan",
 } as const;
 

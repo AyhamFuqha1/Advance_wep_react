@@ -183,6 +183,13 @@
     margin-left: 0;
   }
 }
+.cta-hello {
+  font-size: 1.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  margin-left: 6rem;
+  color: #393939;
+}
 
 /* ─── Mobile ─────────────────────────────────────────────── */
 @media (max-width: 768px) {

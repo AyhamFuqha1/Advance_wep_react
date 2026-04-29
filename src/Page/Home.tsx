@@ -1,4 +1,4 @@
-import Navbar from "../components/Navbar";
+
 import Hero from "../components/Hero";
 import Features from "../components/Features";
 import Slider from "../components/Slider";
@@ -9,7 +9,7 @@ import "../App.css";
 function Home(){
   return (
     <>
-      <Navbar />
+ 
       <Hero />
       <Features />
       <Slider />

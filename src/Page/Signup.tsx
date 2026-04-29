@@ -7,10 +7,12 @@ import logo from "../assets/logo3.png";
 import img1 from "../assets/wo.png";
 import "../css/Login.css";
 import { useNavigate } from "react-router-dom";
-import  { validateSignUp } from "../validation/authValidation";
+import { validateSignUp } from "../validation/authValidation";
 import { ROUTES } from "../config/routes";
-import  {type SignUpErrors } from "../interfaces/auth";
-function SignUp (){
+import { type SignUpErrors } from "../interfaces/auth";
+import api from "../config/axios.config";
+
+function SignUp() {
   const [fullName, setFullName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -28,10 +30,13 @@ function SignUp (){
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [shake, setShake] = useState<boolean>(false);
   const [errors, setErrors] = useState<SignUpErrors>({});
+  const [serverError, setServerError] = useState<string>("");
 
   const navigate = useNavigate();
 
-  const handleSignUp = (): void => {
+  const handleSignUp = async (): Promise<void> => {
+    setServerError("");
+
     const errs = validateSignUp(fullName, email, password, confirmPassword, agreed);
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -39,9 +44,55 @@ function SignUp (){
       setTimeout(() => setShake(false), 500);
       return;
     }
-    setErrors({});
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 2000);
+
+    try {
+      setErrors({});
+      setIsLoading(true);
+
+      const response = await api.post("/register", {
+        full_name: fullName,
+        email,
+        password,
+        password_confirmation: confirmPassword,
+        agreed_to_terms: agreed,
+      });
+
+      localStorage.setItem("token", response.data.token);
+
+      if (response.data.user) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            full_name: response.data.user.full_name,
+            username: response.data.user.username,
+            email: response.data.user.email,
+            profile_image: null,
+          })
+        );
+      }
+
+      navigate("/profile");
+    } catch (error: any) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+
+      if (error.response?.data?.errors) {
+        const backendErrors = error.response.data.errors;
+        setErrors({
+          fullName: backendErrors.full_name?.[0] || "",
+          email: backendErrors.email?.[0] || "",
+          password: backendErrors.password?.[0] || "",
+          confirmPassword: backendErrors.password_confirmation?.[0] || "",
+          agreed: backendErrors.agreed_to_terms?.[0] || "",
+        });
+      } else if (error.response?.data?.message) {
+        setServerError(error.response.data.message);
+      } else {
+        setServerError("Sign up failed");
+      }
+    } finally {
+      setIsLoading(false); 
+    }
   };
 
   return (
@@ -77,7 +128,10 @@ function SignUp (){
                 className="input"
                 placeholder="John Doe"
                 value={fullName}
-                onChange={(e) => { setFullName(e.target.value); setErrors(p => ({ ...p, fullName: "" })); }}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  setErrors((p) => ({ ...p, fullName: "" }));
+                }}
                 onFocus={() => setNameFocused(true)}
                 onBlur={() => setNameFocused(false)}
               />
@@ -94,7 +148,10 @@ function SignUp (){
                 className="input"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); setErrors(p => ({ ...p, email: "" })); }}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrors((p) => ({ ...p, email: "" }));
+                }}
                 onFocus={() => setEmailFocused(true)}
                 onBlur={() => setEmailFocused(false)}
               />
@@ -111,15 +168,19 @@ function SignUp (){
                 className="input"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setErrors(p => ({ ...p, password: "" })); }}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrors((p) => ({ ...p, password: "" }));
+                }}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
               />
               <span className="icon eye-btn" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword
-                  ? <AiFillEyeInvisible className={passwordFocused || password ? "icon-on" : ""} />
-                  : <AiFillEye className={passwordFocused || password ? "icon-on" : ""} />
-                }
+                {showPassword ? (
+                  <AiFillEyeInvisible className={passwordFocused || password ? "icon-on" : ""} />
+                ) : (
+                  <AiFillEye className={passwordFocused || password ? "icon-on" : ""} />
+                )}
               </span>
             </div>
             {errors.password && <p className="field-error">{errors.password}</p>}
@@ -133,15 +194,21 @@ function SignUp (){
                 className="input"
                 placeholder="••••••••"
                 value={confirmPassword}
-                onChange={(e) => { setConfirmPassword(e.target.value); setErrors(p => ({ ...p, confirmPassword: "" })); }}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setErrors((p) => ({ ...p, confirmPassword: "" }));
+                }}
                 onFocus={() => setConfirmFocused(true)}
                 onBlur={() => setConfirmFocused(false)}
               />
               <span className="icon eye-btn" onClick={() => setShowConfirm(!showConfirm)}>
-                {showConfirm
-                  ? <AiFillEyeInvisible className={confirmFocused || confirmPassword ? "icon-on" : ""} />
-                  : <AiFillEye className={confirmFocused || confirmPassword ? "icon-on" : ""} />
-                }
+                {showConfirm ? (
+                  <AiFillEyeInvisible
+                    className={confirmFocused || confirmPassword ? "icon-on" : ""}
+                  />
+                ) : (
+                  <AiFillEye className={confirmFocused || confirmPassword ? "icon-on" : ""} />
+                )}
               </span>
             </div>
             {errors.confirmPassword && <p className="field-error">{errors.confirmPassword}</p>}
@@ -152,14 +219,18 @@ function SignUp (){
               type="checkbox"
               id="terms"
               checked={agreed}
-              onChange={(e) => { setAgreed(e.target.checked); setErrors(p => ({ ...p, agreed: "" })); }}
+              onChange={(e) => {
+                setAgreed(e.target.checked);
+                setErrors((p) => ({ ...p, agreed: "" }));
+              }}
             />
             <label htmlFor="terms">
-              I agree to{" "}
-              <span className="terms-link">Terms &amp; Conditions</span>
+              I agree to <span className="terms-link">Terms &amp; Conditions</span>
             </label>
             {errors.agreed && <p className="field-error">{errors.agreed}</p>}
           </div>
+
+          {serverError && <p className="field-error">{serverError}</p>}
 
           <button
             className={`signin-btn ${isLoading ? "loading" : ""}`}
@@ -179,6 +250,6 @@ function SignUp (){
       </main>
     </div>
   );
-};
+}
 
 export default SignUp;
