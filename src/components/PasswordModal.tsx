@@ -55,10 +55,20 @@ function PasswordModal({
           />
         </div>
         {pwError && <div className="pw-error">{pwError}</div>}
-        <div className="modal-actions">
-          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={onSave}><FiLock /> Save Password</button>
-        </div>
+   
+
+<div className="modal-actions">
+  <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+  <button 
+    className="btn btn-primary" 
+    onClick={(e) => {          
+      e.stopPropagation();    
+      onSave();
+    }}
+  >
+    <FiLock /> Save Password
+  </button>
+</div>
       </div>
     </div>
   );

@@ -201,7 +201,8 @@ export default function ProfilePage() {
   }
 };
 
-  const handlePasswordSave = async (): Promise<void> => {
+
+const handlePasswordSave = async (): Promise<void> => {
     const err = validatePassword(pw);
     if (err) {
       setPwError(err);
@@ -216,12 +217,8 @@ export default function ProfilePage() {
       });
 
       closePw();
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      emitUserUpdated();
-
-      showToast("Password changed successfully! Please login again.");
-      setTimeout(() => navigate(ROUTES.LOGIN), 1200);
+      showToast("Password changed successfully!");
+      // ✅ ما في logout، ما في navigate، يضل بالصفحة
     } catch (error: any) {
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;
