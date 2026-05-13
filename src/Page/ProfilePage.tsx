@@ -218,7 +218,7 @@ const handlePasswordSave = async (): Promise<void> => {
 
       closePw();
       showToast("Password changed successfully!");
-      // ✅ ما في logout، ما في navigate، يضل بالصفحة
+   
     } catch (error: any) {
       if (error.response?.data?.errors) {
         const errors = error.response.data.errors;

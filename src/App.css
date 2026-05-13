@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 .counter {
   font-size: 16px;
@@ -184,16 +183,4 @@
     border-right-color: var(--border);
   }
 
-=======
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden; 
->>>>>>> 4780c24656d87a4d25ff029f3a41394ccb91122d
 }

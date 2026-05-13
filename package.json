@@ -18,10 +18,6 @@
     "axios": "^1.15.0",
     "localforage": "^1.10.0",
     "lucide-react": "^1.8.0",
-<<<<<<< HEAD
-
-=======
->>>>>>> 4780c24656d87a4d25ff029f3a41394ccb91122d
     "match-sorter": "^8.2.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
