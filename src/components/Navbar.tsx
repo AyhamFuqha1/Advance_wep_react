@@ -55,16 +55,24 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const protectedRoutes = [
+  const protectedPaths = new Set<string>([
     ROUTES.DASHBOARD,
     ROUTES.PROFILE,
     ROUTES.ANALYTICS,
-    ROUTES.SUBJECTS,
-  ];
+    ROUTES.SUMMARIES,
+    ROUTES.QUIZZES,
+    ROUTES.StudyPlan,
+  ]);
+
+  const needsAuth = (path: string): boolean => {
+    if (protectedPaths.has(path)) return true;
+    if (path.startsWith("/subject/")) return true;
+    return false;
+  };
 
   const handleNav = (path: string): void => {
     const token = localStorage.getItem("token");
-    const isProtected = protectedRoutes.includes(path);
+    const isProtected = needsAuth(path);
 
     if (isProtected && !token) {
       navigate(ROUTES.LOGIN);
@@ -196,17 +204,13 @@ function Navbar() {
             Dashboard
           </a>
 
-          <a onClick={() => handleNav(ROUTES.SUBJECTS)}>
-            Summaries
-          </a>
+          <a onClick={() => handleNav(ROUTES.SUMMARIES)}>Summaries</a>
 
           <a onClick={() => handleNav(ROUTES.ANALYTICS)}>
             <FiBarChart2 /> Analytics
           </a>
 
-          <a onClick={() => handleNav(ROUTES.SUBJECTS)}>
-            Quizzes
-          </a>
+          <a onClick={() => handleNav(ROUTES.QUIZZES)}>Quizzes</a>
 
           <a onClick={() => handleNav(ROUTES.StudyPlan)}>
             Study Plan
@@ -223,9 +227,13 @@ function Navbar() {
           Dashboard
         </a>
 
-        <a onClick={() => handleNav(ROUTES.SUBJECTS)}>
-          Subjects
-        </a>
+        <a onClick={() => handleNav(ROUTES.DASHBOARD)}>Subjects</a>
+
+        <a onClick={() => handleNav(ROUTES.SUMMARIES)}>Summaries</a>
+
+        <a onClick={() => handleNav(ROUTES.QUIZZES)}>Quizzes</a>
+
+        <a onClick={() => handleNav(ROUTES.StudyPlan)}>Study Plan</a>
 
         <a onClick={() => handleNav(ROUTES.ANALYTICS)}>
           <FiBarChart2 /> Analytics

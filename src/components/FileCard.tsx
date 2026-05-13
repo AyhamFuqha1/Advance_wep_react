@@ -1,16 +1,28 @@
-import { FileText, Trash } from "lucide-react";
+import { FileText, Trash, Loader2 } from "lucide-react";
 
 interface IProps {
-  key: number;
+  fileId: number;
   name: string;
   date: string;
   onDelete: () => void;
+  onGenerateSummary: () => void;
+  onGenerateQuiz: () => void;
+  summaryLoading?: boolean;
+  quizLoading?: boolean;
 }
 
-const FileCard = ({ key, name, date, onDelete}: IProps) => {
+const FileCard = ({
+  fileId,
+  name,
+  date,
+  onDelete,
+  onGenerateSummary,
+  onGenerateQuiz,
+  summaryLoading = false,
+  quizLoading = false,
+}: IProps) => {
   return (
     <div
-      key={key}
       className="relative transition-all duration-300 hover:-translate-y-2 hover:shadow-xl animate-fade-up"
       style={{
         background: "#ffffff",
@@ -18,7 +30,7 @@ const FileCard = ({ key, name, date, onDelete}: IProps) => {
         borderRadius: "16px",
         padding: "20px",
         boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-        animationDelay: `${key * 0.1}s`,
+        animationDelay: `${(fileId % 12) * 0.05}s`,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = "#555555";
@@ -75,13 +87,19 @@ const FileCard = ({ key, name, date, onDelete}: IProps) => {
 
       <div className="flex gap-2">
         <button
-          //  onClick={() => handleGenerateSummary(file.id)}
-          className="flex-1 h-9 px-3 rounded-lg text-sm font-medium transition-all duration-300 hover:-translate-y-1"
+          type="button"
+          disabled={summaryLoading}
+          onClick={(e) => {
+            e.stopPropagation();
+            onGenerateSummary();
+          }}
+          className="flex-1 h-9 px-3 rounded-lg text-sm font-medium transition-all duration-300 hover:-translate-y-1 disabled:opacity-60 disabled:pointer-events-none inline-flex items-center justify-center gap-1"
           style={{
             background: "#f7f7f5",
             color: "#1a1a1a",
           }}
           onMouseEnter={(e) => {
+            if (summaryLoading) return;
             e.currentTarget.style.background = "#5b8dd9";
             e.currentTarget.style.color = "#ffffff";
           }}
@@ -90,17 +108,24 @@ const FileCard = ({ key, name, date, onDelete}: IProps) => {
             e.currentTarget.style.color = "#1a1a1a";
           }}
         >
+          {summaryLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Summary
         </button>
 
         <button
-          //  onClick={() => handleGenerateQuiz(file.id)}
-          className="flex-1 h-9 px-3 rounded-lg text-sm font-medium transition-all duration-300 hover:-translate-y-1"
+          type="button"
+          disabled={quizLoading}
+          onClick={(e) => {
+            e.stopPropagation();
+            onGenerateQuiz();
+          }}
+          className="flex-1 h-9 px-3 rounded-lg text-sm font-medium transition-all duration-300 hover:-translate-y-1 disabled:opacity-60 disabled:pointer-events-none inline-flex items-center justify-center gap-1"
           style={{
             background: "#f7f7f5",
             color: "#1a1a1a",
           }}
           onMouseEnter={(e) => {
+            if (quizLoading) return;
             e.currentTarget.style.background = "#5b8dd9";
             e.currentTarget.style.color = "#ffffff";
           }}
@@ -109,6 +134,7 @@ const FileCard = ({ key, name, date, onDelete}: IProps) => {
             e.currentTarget.style.color = "#1a1a1a";
           }}
         >
+          {quizLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Quiz
         </button>
       </div>

@@ -1,11 +1,11 @@
 export const ROUTES = {
   HOME: "/",
   DASHBOARD: "/dashboard",
-  SUBJECTS: "/subject/1",
+  SUMMARIES: "/summaries",
+  QUIZZES: "/quizzes",
   ANALYTICS: "/analytics",
   LOGIN: "/login",
   SIGNUP: "/Signup",
   PROFILE: "/Profile",
-StudyPlan:"/StudyPlan",
+  StudyPlan: "/StudyPlan",
 } as const;
-
