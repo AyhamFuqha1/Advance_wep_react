@@ -14,7 +14,8 @@ const router = createBrowserRouter(
       <Route path={ROUTES.SIGNUP} element={<SignUp />} /> 
       <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
       <Route path={ROUTES.QUIZ} element={<Quiz />} />
-      <Route path={ROUTES.RESULT} element={<QuizResult />} />
+      {/* <Route path={ROUTES.RESULT} element={<QuizResult />} /> */}
+      <Route path="/results/:resultId" element={<QuizResult />} />
     </Route>
   )
 );

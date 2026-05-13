@@ -6,7 +6,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/Signup",
   PROFILE: "/Profile",
-   QUIZ: "/quiz/:quizId", 
-    RESULT: "/quiz/:quizId/result",
+   QUIZ: "/quiz/:subjectId", 
+    RESULT: "/results/:resultId",
 
 } as const;

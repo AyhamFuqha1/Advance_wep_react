@@ -1,57 +1,144 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router-dom';
 import { CheckCircle, XCircle, RotateCcw, ArrowLeft } from 'lucide-react';
 import  Navbar from '../components/Navbar';
+import api from '../services/api';
 
 type Difficulty = 'easy' | 'medium' | 'hard';
+interface ResultSummary {
+  id: number;
+  quiz_id: number;
+  score: number;
+  total_questions: number;
+  correct_answers: number;
+  wrong_answers: number;
+  accuracy: number;
+  start_time?: string;
+  end_time?: string;
+  difficulty?: Difficulty;
+  quiz?: {
+    id: number;
+    title: string;
+    difficulty?: Difficulty;
+    subject_id?: number;
+  };
+}
+interface ResultSummaryResponse {
+  message: string;
+  data: ResultSummary;
+}
 
-interface QuestionOption {
-  id: string;
-  question_id: string;
-  question_label: string;
-  option_text: string;
+interface ResultDetailItem {
+  question_id: number;
+  question_text: string;
+  explanation?: string | null;
+
+  selected_option_id: number | null;
+  selected_option_label: string | null;
+  selected_option_text: string | null;
+
+  correct_option_id: number | null;
+  correct_option_label: string | null;
+  correct_option_text: string | null;
+
   is_correct: boolean;
 }
 
-interface QuizQuestion {
-  id: string;
-  quiz_id: string;
-  text: string;
-  explanation?: string;
-  difficulty: Difficulty;
-  options: QuestionOption[];
+interface ResultDetailsResponse {
+  message: string;
+  data: {
+    result_id: number;
+    quiz_id: number;
+    quiz_title: string;
+    difficulty: Difficulty;
+    answers: ResultDetailItem[];
+  };
 }
-
-interface QuizResults {
-  quizId: string;
-  quizTitle: string;
-  difficulty: Difficulty;
-  totalQuestions: number;
-  correctAnswers: number;
-  selectedAnswers: { [key: number]: string };
-  questions: QuizQuestion[];
-}
-
 export function QuizResult() {
   const navigate = useNavigate();
-  const { quizId } = useParams();
- const results:QuizResults | null = (() => {
-  const storedResults = sessionStorage.getItem('quizResults');
-  return storedResults ? JSON.parse(storedResults) : null;
-})();   
-  const [showDetails, setShowDetails] = useState(false);
+  const { resultId } = useParams<{ resultId: string }>();
 
-  useEffect(() => {
-    if (!results) {
-      navigate('/dashboard');
+const [result, setResult] = useState<ResultSummary | null>(null);
+const [details, setDetails] = useState<ResultDetailItem[]>([]);
+const [showDetails, setShowDetails] = useState(false);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState<string | null>(null);
+
+useEffect(() => {
+  if (!resultId) {
+    navigate('/dashboard');
+    return;
+  }
+
+  const fetchResult = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const summaryResponse = await api.get<ResultSummaryResponse>(
+        `/results/${resultId}`
+      );
+
+      const detailsResponse = await api.get<ResultDetailsResponse>(
+        `/results/${resultId}/details`
+      );
+console.log('details response:', detailsResponse.data);
+      setResult(summaryResponse.data.data);
+     setDetails(detailsResponse.data.data.answers ?? []);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load result');
+    } finally {
+      setLoading(false);
     }
-  }, [results,navigate]);
+  };
 
-  if (!results) return null;
+  fetchResult();
+}, [resultId, navigate]);
 
-  const accuracy = Math.round((results.correctAnswers / results.totalQuestions) * 100);
-  const wrongAnswers = results.totalQuestions - results.correctAnswers;
+if (loading) {
+  return (
+    <div className="min-h-screen" style={{ background: '#f7f7f5' }}>
+      <Navbar />
+      <div className="max-w-[800px] mx-auto px-4 md:px-8 py-20">
+        <p>Loading result...</p>
+      </div>
+    </div>
+  );
+}
 
+if (error || !result) {
+  return (
+    <div className="min-h-screen" style={{ background: '#f7f7f5' }}>
+      <Navbar />
+      <div className="max-w-[800px] mx-auto px-4 md:px-8 py-20">
+        <p>{error ?? 'Result not found'}</p>
+      </div>
+    </div>
+  );
+}
+
+const accuracy = result.accuracy;
+const wrongAnswers = result.wrong_answers;
+const difficulty = result.quiz?.difficulty ?? result.difficulty ?? 'medium';
+const formatDuration = (start?: string, end?: string) => {
+  if (!start || !end) return 'Not available';
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  const diffInSeconds = Math.max(
+    0,
+    Math.floor((endDate.getTime() - startDate.getTime()) / 1000)
+  );
+
+  const minutes = Math.floor(diffInSeconds / 60);
+  const seconds = diffInSeconds % 60;
+
+  return `${minutes} min ${seconds} sec`;
+};
+
+const timeTaken = formatDuration(result.start_time, result.end_time);
   const getPerformanceMessage = () => {
     if (accuracy >= 90) return 'Outstanding! 🎉';
     if (accuracy >= 80) return 'Great job!';
@@ -60,20 +147,21 @@ export function QuizResult() {
     return 'Keep practicing!';
   };
 
-  const handleRetakeQuiz = () => {
-    sessionStorage.removeItem('quizResults');
-    navigate(`/quiz/${quizId}`);
-  };
+const handleRetakeQuiz = () => {
+  if (result.quiz?.subject_id) {
+    navigate(`/quiz/${result.quiz.subject_id}`);
+  } else {
+    navigate('/dashboard');
+  }
+};
 
-  const handleBackToSubject = () => {
-    sessionStorage.removeItem('quizResults');
-    navigate("/"); // Go back 2 pages (skip quiz page)
-  };
+const handleBackToSubject = () => {
+  navigate('/dashboard');
+};
 
   return (
     <div className="min-h-screen" style={{ background: '#f7f7f5' }}>
       <Navbar />
-
       <div className="max-w-[800px] mx-auto px-4 md:px-8 py-20">
         {/* Result Summary Card */}
         <div
@@ -92,18 +180,24 @@ export function QuizResult() {
               fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
               color: '#1a1a1a'
             }}>
-            {results.quizTitle}
+            {result.quiz?.title ?? 'Quiz Result'}
           </h1>
 
           {/* Difficulty Badge */}
-          <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-            style={{
-              background: results.difficulty === 'easy' ? '#d1fae5' : results.difficulty === 'medium' ? '#fef3c7' : '#fee2e2',
-              color: '#1a1a1a'
-            }}>
-            <span className="text-sm font-medium capitalize">{results.difficulty} Mode</span>
-          </div>
+         <div
+  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+  style={{
+    background:
+      difficulty === 'easy'
+        ? '#d1fae5'
+        : difficulty === 'medium'
+        ? '#fef3c7'
+        : '#fee2e2',
+    color: '#1a1a1a',
+  }}
+>
+  <span className="text-sm font-medium capitalize">{difficulty} Mode</span>
+</div>
 
           {/* Performance Message */}
           <p
@@ -116,7 +210,7 @@ export function QuizResult() {
           <div
             className="text-6xl md:text-7xl font-serif mb-3"
             style={{ color: '#1a1a1a' }}>
-            {results.correctAnswers} / {results.totalQuestions}
+            {result.correct_answers} / {result.total_questions}
           </div>
 
           <p
@@ -138,7 +232,7 @@ export function QuizResult() {
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             {/* Correct Answers */}
             <div
               className="p-4 rounded-2xl"
@@ -146,7 +240,7 @@ export function QuizResult() {
               <div className="flex items-center justify-center gap-2 mb-2">
                 <CheckCircle className="w-5 h-5" style={{ color: '#10b981' }} />
                 <span className="text-2xl font-bold" style={{ color: '#1a1a1a' }}>
-                  {results.correctAnswers}
+                  {result.correct_answers}
                 </span>
               </div>
               <p className="text-sm" style={{ color: '#555555' }}>
@@ -182,6 +276,19 @@ export function QuizResult() {
                 Accuracy
               </p>
             </div>
+            <div
+  className="p-4 rounded-2xl"
+  style={{ background: '#f7f7f5' }}
+>
+  <div className="flex items-center justify-center gap-2 mb-2">
+    <span className="text-xl font-bold" style={{ color: '#1a1a1a' }}>
+      {timeTaken}
+    </span>
+  </div>
+  <p className="text-sm" style={{ color: '#555555' }}>
+    Time Taken
+  </p>
+</div>
           </div>
 
           {/* Action Buttons */}
@@ -247,16 +354,12 @@ export function QuizResult() {
               Detailed Answers
             </h2>
 
-            {results.questions.map((question, index) => {
-              const userAnswerId = results.selectedAnswers[index];
-              const userAnswerOption = question.options.find(opt => opt.id === userAnswerId);
-              const correctOption = question.options.find(opt => opt.is_correct);
-              const isCorrect = userAnswerOption?.is_correct || false;
-              const wasAnswered = userAnswerId !== undefined;
-
-              return (
+            {details.map((item, index) => {
+              const isCorrect = item.is_correct;
+const wasAnswered = item.selected_option_id !== null && item.selected_option_id !== undefined;        
+return (
                 <div
-                  key={question.id}
+                  key={item.question_id}
                   className="animate-fade-up"
                   style={{
                     background: '#ffffff',
@@ -294,7 +397,7 @@ export function QuizResult() {
                       <p
                         className="text-base mb-4"
                         style={{ color: '#555555' }}>
-                        {question.text}
+                        {item.question_text}
                       </p>
 
                       {/* User Answer */}
@@ -309,32 +412,39 @@ export function QuizResult() {
                               background: isCorrect ? '#d1fae5' : '#fee2e2',
                               color: '#1a1a1a'
                             }}>
-                            {wasAnswered && userAnswerOption ? (
-                              <span>
-                                <span className="font-bold">{userAnswerOption.question_label}.</span> {userAnswerOption.option_text}
-                              </span>
-                            ) : (
-                              'Not answered'
-                            )}
+{wasAnswered ? (
+  <span>
+    <span className="font-bold">{item.selected_option_label}.</span>{' '}
+    {item.selected_option_text}
+  </span>
+) : (
+  'Not answered'
+)}
                           </div>
                         </div>
 
                         {/* Correct Answer (if wrong) */}
-                        {!isCorrect && correctOption && (
-                          <div>
-                            <p className="text-sm font-medium mb-1" style={{ color: '#777777' }}>
-                              Correct Answer:
-                            </p>
-                            <div
-                              className="px-4 py-2 rounded-lg inline-block"
-                              style={{
-                                background: '#d1fae5',
-                                color: '#1a1a1a'
-                              }}>
-                              <span className="font-bold">{correctOption.question_label}.</span> {correctOption.option_text}
-                            </div>
-                          </div>
-                        )}
+{!isCorrect && item.correct_option_id && (
+  <div>
+    <p className="text-sm font-medium mb-1" style={{ color: '#777777' }}>
+      Correct Answer:
+    </p>
+    <div
+      className="px-4 py-2 rounded-lg inline-block"
+      style={{
+        background: '#d1fae5',
+        color: '#1a1a1a'
+      }}>
+      <span className="font-bold">{item.correct_option_label}.</span>{' '}
+      {item.correct_option_text}
+    </div>
+  </div>
+)}
+{item.explanation && (
+  <p className="mt-3 text-sm" style={{ color: '#555555' }}>
+    Explanation: {item.explanation}
+  </p>
+)}
                       </div>
                     </div>
                   </div>
