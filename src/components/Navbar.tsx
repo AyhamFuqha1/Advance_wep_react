@@ -7,6 +7,7 @@ import { FiBarChart2 } from "react-icons/fi";
 import "../css/Navbar.css";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../config/routes";
+<<<<<<< HEAD
 import api from "../config/axios.config";
 
 type StoredUser = {
@@ -22,6 +23,9 @@ const getStoredUser = (): StoredUser | null => {
 };
 
 function Navbar() {
+=======
+function Navbar(){
+>>>>>>> 4780c24656d87a4d25ff029f3a41394ccb91122d
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [profileOpen, setProfileOpen] = useState<boolean>(false);
@@ -215,6 +219,9 @@ function Navbar() {
           <a onClick={() => handleNav(ROUTES.StudyPlan)}>
             Study Plan
           </a>
+          <a onClick={() => navigate(ROUTES.STUDY_PLAN)}>
+           Study Plan
+          </a>
         </div>
       </nav>
 
@@ -238,6 +245,7 @@ function Navbar() {
         <a onClick={() => handleNav(ROUTES.ANALYTICS)}>
           <FiBarChart2 /> Analytics
         </a>
+<<<<<<< HEAD
 
         {!isLoggedIn ? (
           <>
@@ -256,6 +264,18 @@ function Navbar() {
             </a>
           </>
         )}
+=======
+        <a onClick={() => handleNav(ROUTES.STUDY_PLAN)}>
+          Study Plan
+        </a>
+        <a onClick={() => handleNav(ROUTES.LOGIN)}>
+          Log In
+        </a>
+
+        <a id="nav-signup-mobile" onClick={() => handleNav(ROUTES.SIGNUP)}>
+          <MdPersonAddAlt /> Sign Up
+        </a>
+>>>>>>> 4780c24656d87a4d25ff029f3a41394ccb91122d
       </div>
     </>
   );
