@@ -2,10 +2,13 @@
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 // ================== Study Plans ==================
-export async function getStudyPlans(userId: number = 1) {
-  const response = await fetch(`${API_BASE_URL}/study-plans?user_id=${userId}`, {
+export async function getStudyPlans() {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${API_BASE_URL}/study-plans`, {
     headers: {
       Accept: "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -18,9 +21,12 @@ export async function getStudyPlans(userId: number = 1) {
 
 // ================== Analytics ==================
 export async function getAnalytics() {
+  const token = localStorage.getItem("token");
+
   const response = await fetch(`${API_BASE_URL}/analytics`, {
     headers: {
       Accept: "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -32,11 +38,14 @@ export async function getAnalytics() {
 }
 
 // ================== AI Generate Study Plan ==================
-export async function generateStudyPlan(userId: number) {
-  const response = await fetch(`${API_BASE_URL}/generate-study-plan/${userId}`, {
+export async function generateStudyPlan() {
+  const token = localStorage.getItem("token");
+console.log("study plan token:", token);
+  const response = await fetch(`${API_BASE_URL}/generate-study-plan`, {
     method: "POST",
     headers: {
       Accept: "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 

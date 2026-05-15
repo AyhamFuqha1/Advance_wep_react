@@ -57,7 +57,7 @@ export default function QuizModeButton({
                      {type==='easy'?'Easy':type==='medium'?'Medium':'Hard'}
                     </h3>
                     <p className="text-sm" style={{ color: '#555555' }}>
-                      {type==='easy'?'Perfect for beginners':type==='medium'?'Moderate challenge':'For advanced learners'} • {allQuestions.filter(q => q.difficulty === type).length} questions
+                      {type==='easy'?'Perfect for beginners':type==='medium'?'Moderate challenge':'For advanced learners'}
                     </p>
                   </div>
                 </div>
