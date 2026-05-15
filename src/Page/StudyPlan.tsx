@@ -49,7 +49,7 @@ export default function StudyPlan() {
 
   const loadStudyPlans = async () => {
     try {
-      const data: ApiStudyPlan[] = await getStudyPlans(1);
+      const data: ApiStudyPlan[] = await getStudyPlans();
 
       const formattedTasks: StudyTask[] = data.map((plan) => ({
         id: String(plan.id),
@@ -101,7 +101,7 @@ export default function StudyPlan() {
   const handleGenerateAIPlan = async () => {
     try {
       setGenerating(true);
-      await generateStudyPlan(1);
+      await generateStudyPlan();
       await loadStudyPlans();
       await loadAiSuggestions();
     } catch (error) {

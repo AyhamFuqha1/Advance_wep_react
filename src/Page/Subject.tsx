@@ -4,8 +4,9 @@ import { UploadModal } from "../components/UploadModal";
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../components/contexts/ToastContext";
 import useAuthenticatedQuery from "../hooks/useAuthenticatedQuery";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useAuthenticatedMutation from "../hooks/useAuthenticatedMutation";
+
 
 import { useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -71,6 +72,7 @@ function subjectHeading(raw: SubjectApiResponse | undefined): string {
 }
 const Subject = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const subjectId = Number(id);
   const [idDelete, setIdDelete] = useState<number | null>(null);
   const { showToast } = useToast();
@@ -141,10 +143,10 @@ const Subject = () => {
     }
   };
 
-  const openQuizPicker = (materialId: number, fromHeader: boolean) => {
+/*   const openQuizPicker = (materialId: number, fromHeader: boolean) => {
     const fileLabel = files.find((f) => f.id === materialId)?.file_name;
     setQuizDifficultyModal({ materialId, fromHeader, fileLabel });
-  };
+  } */;
 
   const runQuizGeneration = async (
     materialId: number,
@@ -170,6 +172,7 @@ const Subject = () => {
       }
       showToast("Quiz ready", "success");
       setAiResult({ kind: "quiz", data: normalized });
+      navigate(`/quiz/${subjectId}`);
     } catch (e) {
       showToast(formatApiError(e, "Failed to generate quiz"), "error");
     } finally {
@@ -185,25 +188,27 @@ const Subject = () => {
     void runQuizGeneration(materialId, difficulty, fromHeader);
   };
 
-  const handleFileQuizRequest = (fileId: number) => {
-    openQuizPicker(fileId, false);
-  };
+const handleFileQuizRequest = (fileId: number) => {
+  navigate(`/quiz/${subjectId}/material/${fileId}`);
+};
 
-  const handleSubjectQuizClick = () => {
-    const materialId = resolveSingleMaterialForHeader();
-    if (materialId === null) {
-      if (files.length === 0) {
-        showToast("Upload at least one file first.", "warning");
-      } else {
-        showToast(
-          "This subject has several files — use Quiz on the file card you want.",
-          "info",
-        );
-      }
-      return;
+ const handleSubjectQuizClick = () => {
+  const materialId = resolveSingleMaterialForHeader();
+
+  if (materialId === null) {
+    if (files.length === 0) {
+      showToast("Upload at least one file first.", "warning");
+    } else {
+      showToast(
+        "This subject has several files — use Quiz on the file card you want.",
+        "info",
+      );
     }
-    openQuizPicker(materialId, true);
-  };
+    return;
+  }
+
+  navigate(`/quiz/${subjectId}/material/${materialId}`);
+};
 
   const handleSubjectSummary = async () => {
     const materialId = resolveSingleMaterialForHeader();

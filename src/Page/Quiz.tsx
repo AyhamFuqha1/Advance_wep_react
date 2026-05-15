@@ -35,11 +35,6 @@ interface Quiz {
   questions: QuizQuestion[];
 }
 
-interface QuizResponse {
-  message: string;
-  data: Quiz;
-}
-
 interface SubmitResponse {
   message: string;
   data: {
@@ -52,10 +47,16 @@ interface SubmitResponse {
     accuracy: number;
   };
 }
-
+import {
+  AI_QUIZZES_ENDPOINT,
+  aiRequestConfig,
+} from "../config/aiEndpoints";
 export function Quiz() {
   const navigate = useNavigate();
-  const { subjectId } = useParams<{ subjectId: string }>();
+const { subjectId, materialId } = useParams<{
+  subjectId: string;
+  materialId: string;
+}>();
 
   const [toast, setToast] = useState<{ msg: string; type: string }>({
     msg: '',
@@ -78,10 +79,9 @@ export function Quiz() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [timeRemaining, setTimeRemaining] = useState(0);
-
 const fetchQuizByDifficulty = async (difficulty: Difficulty) => {
-  if (!subjectId) {
-    console.log('subjectId missing');
+  if (!subjectId || !materialId) {
+    console.log('subjectId or materialId missing');
     return;
   }
 
@@ -89,33 +89,33 @@ const fetchQuizByDifficulty = async (difficulty: Difficulty) => {
     setLoading(true);
     setError(null);
 
-    console.log('subjectId:', subjectId);
-    console.log('difficulty:', difficulty);
+    const response = await api.post(
+      AI_QUIZZES_ENDPOINT,
+     {
+  subject_id: Number(subjectId),
+  material_id: Number(materialId),
+  difficulty,
+},
+      aiRequestConfig
+    );
 
-    const response = await api.get<QuizResponse>(
-  `/quizzes/${subjectId}`,
-  {
-    params: { difficulty },
-  }
-);
-    console.log('API response:', response.data);
+    const generatedQuiz = response.data.quiz;
 
-    setQuiz(response.data.data);
+    setQuiz(generatedQuiz);
     setSelectedDifficulty(difficulty);
     setQuizStarted(true);
     setQuizStartTime(new Date().toISOString());
     setCurrentQuestionIndex(0);
     setSelectedAnswers({});
-    showToast('Quiz loaded successfully!', 'success');
+    showToast('Quiz generated successfully!', 'success');
   } catch (err) {
-    console.error('fetch error:', err);
-    setError('Failed to load quiz');
-    showToast('Failed to load quiz.', 'error');
+    console.error('generate quiz error:', err);
+    setError('Failed to generate quiz');
+    showToast('Failed to generate quiz.', 'error');
   } finally {
     setLoading(false);
   }
 };
-
  const handleSelectDifficulty = (difficulty: Difficulty) => {
   console.log('clicked difficulty:', difficulty);
   fetchQuizByDifficulty(difficulty);
@@ -226,11 +226,11 @@ const fetchQuizByDifficulty = async (difficulty: Difficulty) => {
                 color: '#1a1a1a',
               }}
             >
-              Mathematics Quiz
+              Create Your AI Quiz
             </h1>
 
             <p className="text-center mb-8" style={{ color: '#555555' }}>
-              Choose your difficulty level to begin
+             Choose a difficulty level to generate your quiz
             </p>
 
             {error && (
@@ -261,7 +261,7 @@ const fetchQuizByDifficulty = async (difficulty: Difficulty) => {
 
             {loading && (
               <p className="mt-6 text-center text-sm" style={{ color: '#555555' }}>
-                Loading quiz...
+                Generating quiz...
               </p>
             )}
           </div>
